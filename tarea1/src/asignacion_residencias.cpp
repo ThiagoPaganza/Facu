@@ -33,7 +33,7 @@ Asignacion asignarResidencias(nat m, nat* C, nat n, nat** hPrefs, nat** ePrefs)
         if (C[hosActual] == 0) desapilar(hosLibres);
       }
       else{
-        if (ranking[estActual][hosActual] < ranking[estActual][current[estActual]]){ //menos es mejor rankeado
+        if (ranking[estActual][hosActual] < ranking[estActual][current[estActual]]){
           C[current[estActual]]++;
           C[hosActual]--;
           if (C[hosActual] == 0) desapilar(hosLibres);
@@ -50,9 +50,11 @@ Asignacion asignarResidencias(nat m, nat* C, nat n, nat** hPrefs, nat** ePrefs)
     }
     par newPar;
     for (nat i = 0; i < n; i++){
-      newPar.eid = i;
-      newPar.hid = current[i];
-      insertar_par(newPar, salida);
+      if (current[i] != -1){
+        newPar.eid = i;
+        newPar.hid = current[i];
+        insertar_par(newPar, salida);
+      }
 
       delete[] ranking[i];
     }
