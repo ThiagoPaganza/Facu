@@ -1,121 +1,84 @@
+/* 50250037 */
+
 /*
   Módulo de implementación de `cronologia_consistente'.
+
   Laboratorio de Programación 3.
   InCo-FIng-UDELAR
 */
 #include <stdio.h>
 
 #include "../include/cronologia_consistente.h"
-#include "../include/grafo.h"
-#include "../include/lista_datos.h"
+#include"../include/grafo.h"
+#include"../include/lista.h"
 
 Cronologia cronologia_consistente(nat n, ListaDatos tipo1, ListaDatos tipo2)
 {
   bool existe_cr_consistente = false; 
-
   Cronologia cr = new evento[2*n]; 
-
-  //crear Grafo G=(V,E) donde V={N1,...,Nn,M1,...,Mn} y E={(a,b) sii a sucedio antes que b}
-  Grafo G = crear_grafo(2*n, "dirigido"); //  O(2n) = O(n)
-
-  nat Mi,Nj,Mj,Ni;
-  Lista S = crear_lista(); // Conjunto de nodos activos sin aristas incidentes desde otros nodos activos.
-
-  int* cant_aristas = new int[2*n+1]; //cant_aristas_incidentes_desde_nodos_activos
-
-  for (nat i=1; i<=n; i++){ // O(n)
-    agregar_vertice( i, G);
-    agregar_vertice( i+n, G);
-
-    //tipo3 o trivial, cada persona nace antes de morir ==> (Ni,Mi)
-    Ni = i;
-    Mi = i+n;
-    agregar_arista( Ni, Mi, G);
-
-    cant_aristas[Ni] = 0;
-    cant_aristas[Mi] = 1;
+  Grafo G = crear_grafo(2*n, "dirigido");
+  nat b_i,d_i,b_j,d_j;
+  Lista S = crear_lista();
+  int* cantAristas = new int[2*n+1];
+  for (nat i = 1; i <= n; i++){
+    agregar_vertice(i+n, G);
+    agregar_vertice(i, G);
+    b_i = i;
+    d_i = i+n;
+    agregar_arista(b_i, d_i, G);
+    cantAristas[b_i] = 0;
+    cantAristas[d_i] = 1;
   }
-
-  //tipo1, i murio antes de que j nazca ==> (Mi,Nj) 
-  while (!es_vacia_lista_datos(tipo1)){ //O(m1)
-    Mi = id1(primer_dato(tipo1)) + n;
-    Nj = id2(primer_dato(tipo1));
-
-    agregar_arista( Mi, Nj, G);
+  while (!es_vacia_lista_datos(tipo1)){
+    b_j = id2(primer_dato(tipo1));
+    d_i = id1(primer_dato(tipo1)) + n;
+    agregar_arista(d_i, b_j, G);
     tipo1 = resto_datos(tipo1);
-
-    cant_aristas[Nj] ++;
+    cantAristas[b_j]++;
   }
-
-  //tipo2, i j se solaparon ==> (Ni,Mj) y (Nj,Mi) 
-  while (!es_vacia_lista_datos(tipo2)){ //O(m2)
-    Ni = id1(primer_dato(tipo2));
-    Nj = id2(primer_dato(tipo2));
-    Mi = Ni + n;
-    Mj = Nj + n;
-
-    agregar_arista( Ni, Mj,G);
-    agregar_arista( Nj, Mi,G);
+  while (!es_vacia_lista_datos(tipo2)){
+    b_j = id2(primer_dato(tipo2));
+    b_i = id1(primer_dato(tipo2));
+    d_j = b_j + n;
+    d_i = b_i + n;
+    agregar_arista(b_j, d_i,G);
+    agregar_arista(b_i, d_j,G);
     tipo2 = resto_datos(tipo2);
-
-    cant_aristas[Mj] ++;
-    cant_aristas[Mi] ++;
+    cantAristas[d_i] ++;
+    cantAristas[d_j] ++;
   }
-
-  //  O(m1+m2 = m)
-
-  //Hallar ordenamiento topologico
- 
-  nat nodo, vecino;
-  nat i = 0;  //indice de la cronologia
-  Lista ady;
-
-  for (nat j=1; j<=n; j++) {  //  O(n)
-    if (cant_aristas[j] == 0) insertar_al_inicio(j, S);
-  }
-
-  while ( !es_vacia_lista(S) ){
-      nodo = primero(S);
+  nat current, next;
+  nat i = 0;
+  Lista adyacencias;
+  for (nat j=1; j<=n; j++) if (cantAristas[j] == 0) insertar_al_inicio(j, S); 
+  while (!es_vacia_lista(S)){
+      current = primero(S);
       remover_al_inicio(S);
-
-      if (nodo > n) {
-        cr[i].id = nodo - n;
+      if (current > n) {
+        cr[i].id = current - n;
         cr[i].tipo = muere; 
       } else {
-        cr[i].id = nodo;
+        cr[i].id = current;
         cr[i].tipo = nace; 
       }
       i++;
-
-      ady = adyacentes(nodo, G);
-      for (nat m=1; m <= out_grado(nodo, G); m++){  // para cada nodo vecino del cual es padre ==> O(n_v)
-        comienzo(ady);
-        vecino = actual(ady);
-
-        cant_aristas[vecino] --;
-        if (cant_aristas[vecino] == 0) insertar_al_final( vecino, S);
-
-        remover_al_inicio(ady); //aprovecho y voy borrando las aristas del grafo
+      adyacencias = adyacentes(current, G);
+      for (nat m=1; m <= out_grado(current, G); m++){
+        comienzo(adyacencias);
+        next = actual(adyacencias);
+        cantAristas[next]--;
+        if (cantAristas[next] == 0) insertar_al_final( next, S);
+        remover_al_inicio(adyacencias);
       }
   }
-
-  if ( i == 2*n ) existe_cr_consistente = true; // se le pudo dar un orden a todos los nodos.
-
-  destruir_lista(S);  //  O(1) pues sale vacia
-  delete [] cant_aristas; //  O(2n) = O(n);
-  destruir_grafo(G);  //  O(n + m)
-  
-  if(existe_cr_consistente) { // si existe, retornarla en cr
+  if (i == 2*n) existe_cr_consistente = true;
+  destruir_grafo(G);
+  delete [] cantAristas;
+  destruir_lista(S);
+  if(existe_cr_consistente) {
     return cr;
-  } else {// si no existe, liberar la memoria asociada a cr y retornar NULL   
+  } else {  
     delete [] cr;
     return NULL;
   }
-
-
-  //Ideas o seteo S como todos los Ni en el primer for, y en cada while los saco de S si le entra alguna arista,
-  //o hago un for desde 1 hasta n despues de los while chequeando si incidentes desde activos es 0
-  //debo chequear para no poner aristas dos veces?
-  //ejemplo: tengo 1,2 tipo 1, (M1,N2) y tengo 1 y 2 tipo 2 (M1,N2) 
-  //la arista se pondria dos veces. Molesta? Da igual?
 } 
