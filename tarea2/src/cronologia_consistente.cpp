@@ -15,7 +15,6 @@ Cronologia cronologia_consistente(nat n, ListaDatos tipo1, ListaDatos tipo2)
   bool existe_cr_consistente = false; 
   Cronologia cr = new evento[2*n]; 
   nat b_i,d_i,b_j,d_j;
-
   Grafo G = crear_grafo(2*n, "dirigido");
   int* cantAristas = new int[2*n+1];
   for (nat i = 1; i <= n; i++){
@@ -45,7 +44,6 @@ Cronologia cronologia_consistente(nat n, ListaDatos tipo1, ListaDatos tipo2)
     tipo1 = resto_datos(tipo1);
     cantAristas[b_j]++;
   }
-  
   nat current, next;
   nat i = 0;
   Lista adyacencias;
