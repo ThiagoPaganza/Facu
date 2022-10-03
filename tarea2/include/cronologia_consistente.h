@@ -41,5 +41,4 @@
  * Los tipos de datos `Cronologia' y `evento' están declarados en utils.h
  */
 Cronologia cronologia_consistente(nat n, ListaDatos tipo1, ListaDatos tipo2);
-
 #endif
