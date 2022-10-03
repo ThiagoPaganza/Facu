@@ -1,3 +1,5 @@
+/*  50250037  */
+
 /*
   Módulo de implementación de `cronologia_consistente'.
 
@@ -51,7 +53,6 @@ Cronologia cronologia_consistente(nat n, ListaDatos tipo1, ListaDatos tipo2)
   for (nat k = 1; k <= n; k++) if (cantAristas[k] == 0) insertar_al_inicio(k, S); 
   while (!es_vacia_lista(S)){
       current = primero(S);
-      remover_al_inicio(S);
       if (current <= n) {
         cr[i].tipo = nace; 
         cr[i].id = current;
@@ -68,6 +69,7 @@ Cronologia cronologia_consistente(nat n, ListaDatos tipo1, ListaDatos tipo2)
         if (cantAristas[next] == 0) insertar_al_final(next, S);
         remover_al_inicio(adyacencias);
       }
+      remover_al_inicio(S);
   }
   if (i == 2*n) existe_cr_consistente = true;
   destruir_grafo(G);
